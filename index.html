@@ -26,6 +26,38 @@
         header h1 span { color: #ffd700; }
         .update-time { color: #888; font-size: 0.85em; }
         
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-backup {
+            background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+            color: #000;
+        }
+        .btn-reset {
+            background: linear-gradient(135deg, #ffd700 0%, #ffb300 100%);
+            color: #000;
+        }
+        
         .stats-bar {
             display: flex;
             justify-content: center;
@@ -51,17 +83,30 @@
         .stat-item.green .stat-value { color: #00ff64; }
         
         .grid-container {
-            overflow-x: auto;
+            overflow: auto;
             background: rgba(0,0,0,0.2);
             border-radius: 10px;
             padding: 10px;
+            max-height: 70vh;
+            position: relative;
         }
         
         table {
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             width: 100%;
             min-width: 1600px;
             font-size: 0.75em;
+        }
+        
+        thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        thead th {
+            background: #1a1a2e;
         }
         
         th, td {
@@ -71,39 +116,49 @@
         }
         
         .cat-header {
-            background: rgba(255,215,0,0.2);
+            background: #2a2a4e;
             color: #ffd700;
             font-weight: bold;
             font-size: 0.85em;
+            border-bottom: 2px solid #ffd700;
         }
         
         .level-header {
-            background: rgba(255,255,255,0.05);
+            background: #1e1e3e;
             color: #aaa;
             font-size: 0.7em;
+            border-bottom: 2px solid #444;
         }
         
         .player-name {
             text-align: left !important;
             padding-left: 8px !important;
             font-weight: 500;
-            min-width: 110px;
+            min-width: 120px;
+            max-width: 150px;
             position: sticky;
             left: 0;
-            z-index: 1;
+            z-index: 5;
         }
         
-        /* Couleurs par statut de seuil */
+        /* Header Nom doit être sticky en haut ET à gauche */
+        thead th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 15;
+            background: #2a2a4e;
+        }
+        
         tr.status-red { background: rgba(255,50,50,0.15); }
-        tr.status-red .player-name { background: rgba(255,50,50,0.3); }
+        tr.status-red .player-name { background: #4a2020; }
         tr.status-red:hover { background: rgba(255,50,50,0.25); }
         
         tr.status-orange { background: rgba(255,165,0,0.15); }
-        tr.status-orange .player-name { background: rgba(255,165,0,0.3); }
+        tr.status-orange .player-name { background: #4a3a10; }
         tr.status-orange:hover { background: rgba(255,165,0,0.25); }
         
         tr.status-green { background: rgba(0,255,100,0.15); }
-        tr.status-green .player-name { background: rgba(0,255,100,0.3); }
+        tr.status-green .player-name { background: #1a4a2a; }
         tr.status-green:hover { background: rgba(0,255,100,0.25); }
         
         .col-pts { font-weight: bold; min-width: 40px; }
@@ -138,16 +193,25 @@
 <body>
     <div class="container">
         <header>
-            <h1>🎁 <span>UFC</span> Clan Tracker</h1>
-            <p class="update-time">Mis à jour : 2026-01-26 10:52</p>
+            <h1>🎁 <span>FAM</span> Clan Tracker</h1>
+            <p class="update-time">Mis à jour : 2026-01-27 06:42</p>
             <p class="update-time">🎯 Objectif : <strong>50 coffres</strong> + <strong>1000 points</strong></p>
+            
+            <div class="action-buttons">
+                <button class="action-btn btn-backup" onclick="doBackup()" id="btnBackup">
+                    💾 Sauvegarde
+                </button>
+                <button class="action-btn btn-reset" onclick="doReset()" id="btnReset">
+                    🔄 Reset Semaine
+                </button>
+            </div>
             <div class="stats-bar">
                 <div class="stat-item">
                     <div class="stat-value">650</div>
                     <div class="stat-label">Coffres</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">19530</div>
+                    <div class="stat-value">19145</div>
                     <div class="stat-label">Points</div>
                 </div>
                 <div class="stat-item">
@@ -155,11 +219,11 @@
                     <div class="stat-label">Membres</div>
                 </div>
                 <div class="stat-item red">
-                    <div class="stat-value">95</div>
+                    <div class="stat-value">93</div>
                     <div class="stat-label">🔴 0-49%</div>
                 </div>
                 <div class="stat-item orange">
-                    <div class="stat-value">2</div>
+                    <div class="stat-value">4</div>
                     <div class="stat-label">🟠 50-99%</div>
                 </div>
                 <div class="stat-item green">
@@ -300,22 +364,22 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">71 740 510</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">71 902 450</td>
+                        <td class="col-anc-power">71 740 510</td>
+                        <td class="col-pct positive">+0.2%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Alba VI</td>
-                        <td class="col-pts">275</td>
-                        <td class="col-pct-seuil">27%</td>
-                        <td class="col-tot">13</td>
+                        <td class="col-pts">285</td>
+                        <td class="col-pct-seuil">28%</td>
+                        <td class="col-tot">14</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-val">1</td>
-                        <td class="cell-zero">-</td>
+                        <td class="cell-val">1</td>
                         <td class="cell-val">3</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -357,23 +421,23 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">125 630 636</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">126 200 786</td>
+                        <td class="col-anc-power">125 630 636</td>
+                        <td class="col-pct positive">+0.5%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Alex</td>
-                        <td class="col-pts">540</td>
-                        <td class="col-pct-seuil">54%</td>
-                        <td class="col-tot">25</td>
+                        <td class="col-pts">590</td>
+                        <td class="col-pct-seuil">59%</td>
+                        <td class="col-tot">29</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-val">8</td>
-                        <td class="cell-val">5</td>
-                        <td class="cell-val">4</td>
+                        <td class="cell-val">7</td>
+                        <td class="cell-val">6</td>
                         <td class="cell-val">3</td>
                         <td class="cell-val">3</td>
                         <td class="cell-zero">-</td>
@@ -414,9 +478,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">124 356 445</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">124 434 125</td>
+                        <td class="col-anc-power">124 356 445</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">ANuStart Mish</td>
@@ -471,9 +535,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">59 226 295</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">61 879 695</td>
+                        <td class="col-anc-power">59 226 295</td>
+                        <td class="col-pct positive">+4.5%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Artemisa192</td>
@@ -528,9 +592,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">32 889 900</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">33 012 450</td>
+                        <td class="col-anc-power">32 889 900</td>
+                        <td class="col-pct positive">+0.4%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Atalante again</td>
@@ -586,8 +650,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">83 371 385</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">83 371 385</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Axels Hoere</td>
@@ -642,9 +706,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">9 779 575</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">10 523 165</td>
+                        <td class="col-anc-power">9 779 575</td>
+                        <td class="col-pct positive">+7.6%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">AZE Shahmuradov</td>
@@ -699,9 +763,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">80 972 405</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">81 172 405</td>
+                        <td class="col-anc-power">80 972 405</td>
+                        <td class="col-pct positive">+0.2%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Bagas SK3</td>
@@ -756,9 +820,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">40 816 300</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">48 544 395</td>
+                        <td class="col-anc-power">40 816 300</td>
+                        <td class="col-pct positive">+18.9%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Bara</td>
@@ -813,9 +877,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">1 599 848</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">69 449 147</td>
+                        <td class="col-anc-power">1 599 848</td>
+                        <td class="col-pct positive">+4241.0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Blacksinger</td>
@@ -871,14 +935,14 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">105 878 999</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">105 878 999</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-orange">
                         <td class="player-name">Byte Me Again</td>
-                        <td class="col-pts">2140</td>
-                        <td class="col-pct-seuil">214%</td>
-                        <td class="col-tot">35</td>
+                        <td class="col-pts">2080</td>
+                        <td class="col-pct-seuil">208%</td>
+                        <td class="col-tot">34</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -901,7 +965,7 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-val">21</td>
+                        <td class="cell-val">20</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -927,9 +991,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">79 841 390</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">81 957 690</td>
+                        <td class="col-anc-power">79 841 390</td>
+                        <td class="col-pct positive">+2.7%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Christina</td>
@@ -984,33 +1048,26 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">63 067 920</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">63 192 210</td>
+                        <td class="col-anc-power">63 067 920</td>
+                        <td class="col-pct positive">+0.2%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Coifyn</td>
-                        <td class="col-pts">550</td>
-                        <td class="col-pct-seuil">55%</td>
-                        <td class="col-tot">27</td>
+                        <td class="col-pts">455</td>
+                        <td class="col-pct-seuil">45%</td>
+                        <td class="col-tot">28</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-val">19</td>
+                        <td class="cell-val">23</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-val">7</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
+                        <td class="cell-val">4</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -1041,9 +1098,16 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">32 635 140</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="col-power">32 839 480</td>
+                        <td class="col-anc-power">32 635 140</td>
+                        <td class="col-pct positive">+0.6%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">DanielSan I</td>
@@ -1099,8 +1163,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">35 579 290</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">35 579 290</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Das Häschen SK5</td>
@@ -1155,9 +1219,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">1 677 285</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">1 691 844</td>
+                        <td class="col-anc-power">1 677 285</td>
+                        <td class="col-pct positive">+0.9%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Delarius</td>
@@ -1212,9 +1276,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">70 144 815</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">71 667 815</td>
+                        <td class="col-anc-power">70 144 815</td>
+                        <td class="col-pct positive">+2.2%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">diablo t</td>
@@ -1269,9 +1333,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">125 269 295</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">127 459 125</td>
+                        <td class="col-anc-power">125 269 295</td>
+                        <td class="col-pct positive">+1.7%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Dianahelm</td>
@@ -1326,9 +1390,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">31 337 095</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">31 733 595</td>
+                        <td class="col-anc-power">31 337 095</td>
+                        <td class="col-pct positive">+1.3%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Diva Haunted Shade</td>
@@ -1384,14 +1448,14 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">111 160 160</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">111 160 160</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Dorikelv I</td>
-                        <td class="col-pts">345</td>
-                        <td class="col-pct-seuil">34%</td>
-                        <td class="col-tot">8</td>
+                        <td class="col-pts">165</td>
+                        <td class="col-pct-seuil">16%</td>
+                        <td class="col-tot">4</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -1402,7 +1466,7 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-val">1</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-val">7</td>
+                        <td class="cell-val">3</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -1440,9 +1504,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">123 713 475</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">123 795 975</td>
+                        <td class="col-anc-power">123 713 475</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">DuggySK</td>
@@ -1497,15 +1561,15 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">72 147 515</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">73 506 415</td>
+                        <td class="col-anc-power">72 147 515</td>
+                        <td class="col-pct positive">+1.9%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Dunos</td>
-                        <td class="col-pts">165</td>
-                        <td class="col-pct-seuil">16%</td>
-                        <td class="col-tot">11</td>
+                        <td class="col-pts">150</td>
+                        <td class="col-pct-seuil">15%</td>
+                        <td class="col-tot">10</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -1513,15 +1577,7 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-val">11</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
+                        <td class="cell-val">10</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -1554,9 +1610,17 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">21 604 240</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="col-power">22 100 360</td>
+                        <td class="col-anc-power">21 604 240</td>
+                        <td class="col-pct positive">+2.3%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Emilio</td>
@@ -1611,19 +1675,33 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">49 039 475</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">49 080 725</td>
+                        <td class="col-anc-power">49 039 475</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">erzebet III</td>
-                        <td class="col-pts">235</td>
-                        <td class="col-pct-seuil">23%</td>
-                        <td class="col-tot">7</td>
+                        <td class="col-pts">180</td>
+                        <td class="col-pct-seuil">18%</td>
+                        <td class="col-tot">5</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-val">1</td>
-                        <td class="cell-val">4</td>
+                        <td class="cell-val">3</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -1641,7 +1719,6 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-val">1</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -1655,22 +1732,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="col-power">92 647 625</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">92 707 825</td>
+                        <td class="col-anc-power">92 647 625</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Eyfedef</td>
@@ -1725,9 +1789,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">42 814 015</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">42 822 515</td>
+                        <td class="col-anc-power">42 814 015</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Fabrinir</td>
@@ -1783,8 +1847,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">63 607 565</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">63 607 565</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">FAM</td>
@@ -1840,8 +1904,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">2 033 921</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">2 033 921</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Febur</td>
@@ -1897,8 +1961,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">324 443</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">324 443</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Fildisen</td>
@@ -1953,9 +2017,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">1 091 067</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">80 065 725</td>
+                        <td class="col-anc-power">1 091 067</td>
+                        <td class="col-pct positive">+7238.3%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Forceworm</td>
@@ -2010,9 +2074,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">123 337 865</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">123 348 915</td>
+                        <td class="col-anc-power">123 337 865</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Frodo SK5</td>
@@ -2067,9 +2131,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">132 973 915</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">133 012 615</td>
+                        <td class="col-anc-power">132 973 915</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">FrostTerrorOG SK</td>
@@ -2124,9 +2188,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">113 897 055</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">115 840 255</td>
+                        <td class="col-anc-power">113 897 055</td>
+                        <td class="col-pct positive">+1.7%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">FumantxuSK5</td>
@@ -2182,8 +2246,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">210 693 650</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">210 693 650</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Funduel</td>
@@ -2238,15 +2302,15 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">88 015 570</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">90 644 970</td>
+                        <td class="col-anc-power">88 015 570</td>
+                        <td class="col-pct positive">+3.0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Galak1978 SK5</td>
-                        <td class="col-pts">495</td>
-                        <td class="col-pct-seuil">49%</td>
-                        <td class="col-tot">19</td>
+                        <td class="col-pts">390</td>
+                        <td class="col-pct-seuil">39%</td>
+                        <td class="col-tot">14</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-val">1</td>
@@ -2257,7 +2321,6 @@
                         <td class="cell-val">8</td>
                         <td class="cell-val">1</td>
                         <td class="cell-val">3</td>
-                        <td class="cell-val">1</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -2295,9 +2358,10 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">85 272 075</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="col-power">85 472 585</td>
+                        <td class="col-anc-power">85 272 075</td>
+                        <td class="col-pct positive">+0.2%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Gralbine</td>
@@ -2352,28 +2416,15 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">20 661 190</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">20 701 010</td>
+                        <td class="col-anc-power">20 661 190</td>
+                        <td class="col-pct positive">+0.2%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Grinch</td>
-                        <td class="col-pts">660</td>
-                        <td class="col-pct-seuil">66%</td>
-                        <td class="col-tot">9</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">1</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">5</td>
+                        <td class="col-pts">45</td>
+                        <td class="col-pct-seuil">4%</td>
+                        <td class="col-tot">3</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -2409,9 +2460,22 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">195 451 480</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="col-power">202 095 880</td>
+                        <td class="col-anc-power">195 451 480</td>
+                        <td class="col-pct positive">+3.4%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Haivan BADSK5</td>
@@ -2467,21 +2531,14 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">86 574 825</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">86 574 825</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Honeybadger</td>
-                        <td class="col-pts">15</td>
-                        <td class="col-pct-seuil">1%</td>
-                        <td class="col-tot">2</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">1</td>
-                        <td class="cell-val">1</td>
+                        <td class="col-pts">0</td>
+                        <td class="col-pct-seuil">0%</td>
+                        <td class="col-tot">0</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -2523,9 +2580,16 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">46 060 365</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="col-power">46 085 865</td>
+                        <td class="col-anc-power">46 060 365</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Innomos</td>
@@ -2580,9 +2644,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">113 003 315</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">113 157 575</td>
+                        <td class="col-anc-power">113 003 315</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">jalby78sk2</td>
@@ -2638,8 +2702,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">1 008 252</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">1 008 252</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Jrachi il Terzo</td>
@@ -2694,9 +2758,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">162 324 120</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">162 432 380</td>
+                        <td class="col-anc-power">162 324 120</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Kehn</td>
@@ -2751,9 +2815,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">44 743 540</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">45 269 240</td>
+                        <td class="col-anc-power">44 743 540</td>
+                        <td class="col-pct positive">+1.2%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Knine SK</td>
@@ -2808,9 +2872,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">118 824 250</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">118 880 450</td>
+                        <td class="col-anc-power">118 824 250</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">LIBERDADE SK</td>
@@ -2865,9 +2929,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">44 009 940</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">44 064 640</td>
+                        <td class="col-anc-power">44 009 940</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Lighthammer III</td>
@@ -2922,9 +2986,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">93 152 245</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">95 128 125</td>
+                        <td class="col-anc-power">93 152 245</td>
+                        <td class="col-pct positive">+2.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Lilith SK</td>
@@ -2980,8 +3044,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">13 170 105</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">13 170 105</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Little Magis</td>
@@ -3036,9 +3100,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">198 741 140</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">1 836 546</td>
+                        <td class="col-anc-power">198 741 140</td>
+                        <td class="col-pct negative">-99.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Lorlot</td>
@@ -3094,8 +3158,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">34 935 839</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">34 935 839</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Lorvenen</td>
@@ -3151,22 +3215,14 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">104 378 885</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">104 378 885</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Lou sanus</td>
-                        <td class="col-pts">500</td>
-                        <td class="col-pct-seuil">50%</td>
-                        <td class="col-tot">14</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">3</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">3</td>
+                        <td class="col-pts">320</td>
+                        <td class="col-pct-seuil">32%</td>
+                        <td class="col-tot">6</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -3193,9 +3249,16 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-val">3</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-val">2</td>
                         <td class="cell-val">4</td>
-                        <td class="cell-val">1</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -3207,9 +3270,10 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">110 046 056</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="col-power">110 048 056</td>
+                        <td class="col-anc-power">110 046 056</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">M a n s o u r SK</td>
@@ -3265,8 +3329,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">58 187 615</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">58 187 615</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">majed1</td>
@@ -3321,15 +3385,15 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">84 003 185</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">84 143 785</td>
+                        <td class="col-anc-power">84 003 185</td>
+                        <td class="col-pct positive">+0.2%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Malashura</td>
-                        <td class="col-pts">195</td>
-                        <td class="col-pct-seuil">19%</td>
-                        <td class="col-tot">4</td>
+                        <td class="col-pts">165</td>
+                        <td class="col-pct-seuil">16%</td>
+                        <td class="col-tot">3</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -3338,7 +3402,7 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-val">2</td>
+                        <td class="cell-val">1</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-val">1</td>
                         <td class="cell-val">1</td>
@@ -3378,9 +3442,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">66 873 455</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">68 029 015</td>
+                        <td class="col-anc-power">66 873 455</td>
+                        <td class="col-pct positive">+1.7%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Manowar jr</td>
@@ -3435,9 +3499,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">60 339 090</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">60 394 690</td>
+                        <td class="col-anc-power">60 339 090</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">maximus</td>
@@ -3492,9 +3556,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">1 531 134</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">90 346 720</td>
+                        <td class="col-anc-power">1 531 134</td>
+                        <td class="col-pct positive">+5800.6%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Mejas</td>
@@ -3550,8 +3614,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">50 515 580</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">50 515 580</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Melquisedeq SK</td>
@@ -3607,14 +3671,14 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">68 911 005</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">68 911 005</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
-                    <tr class="status-red">
+                    <tr class="status-orange">
                         <td class="player-name">Mirathis</td>
-                        <td class="col-pts">975</td>
-                        <td class="col-pct-seuil">97%</td>
-                        <td class="col-tot">41</td>
+                        <td class="col-pts">1125</td>
+                        <td class="col-pct-seuil">112%</td>
+                        <td class="col-tot">49</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-val">2</td>
                         <td class="cell-val">18</td>
@@ -3622,8 +3686,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-val">3</td>
-                        <td class="cell-val">8</td>
-                        <td class="cell-zero">-</td>
+                        <td class="cell-val">14</td>
+                        <td class="cell-val">2</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -3663,9 +3727,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">42 420 395</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">45 662 065</td>
+                        <td class="col-anc-power">42 451 395</td>
+                        <td class="col-pct positive">+7.6%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Moraron</td>
@@ -3720,15 +3784,15 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">1 257 146</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">90 863 880</td>
+                        <td class="col-anc-power">1 257 146</td>
+                        <td class="col-pct positive">+7127.8%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">NEBELKIND</td>
-                        <td class="col-pts">610</td>
-                        <td class="col-pct-seuil">61%</td>
-                        <td class="col-tot">17</td>
+                        <td class="col-pts">870</td>
+                        <td class="col-pct-seuil">87%</td>
+                        <td class="col-tot">22</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-val">9</td>
@@ -3763,8 +3827,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-val">5</td>
-                        <td class="cell-val">1</td>
+                        <td class="cell-val">7</td>
+                        <td class="cell-val">4</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -3777,9 +3841,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">110 965 095</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">111 695 795</td>
+                        <td class="col-anc-power">110 965 095</td>
+                        <td class="col-pct positive">+0.7%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Nerrinen</td>
@@ -3834,9 +3898,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">42 619 885</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">43 836 425</td>
+                        <td class="col-anc-power">42 619 885</td>
+                        <td class="col-pct positive">+2.9%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Nidisel</td>
@@ -3891,9 +3955,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">1 166 445</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">85 032 485</td>
+                        <td class="col-anc-power">1 166 445</td>
+                        <td class="col-pct positive">+7189.9%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Nidisen</td>
@@ -3948,9 +4012,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">117 945 320</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">118 134 520</td>
+                        <td class="col-anc-power">117 945 320</td>
+                        <td class="col-pct positive">+0.2%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Olgolil</td>
@@ -4006,8 +4070,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">50 753 454</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">50 753 454</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">olgolod jj</td>
@@ -4063,8 +4127,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">93 841 046</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">93 841 046</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Ozzy</td>
@@ -4120,14 +4184,14 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">62 074 515</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">62 074 515</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Pendragon</td>
-                        <td class="col-pts">420</td>
-                        <td class="col-pct-seuil">42%</td>
-                        <td class="col-tot">7</td>
+                        <td class="col-pts">715</td>
+                        <td class="col-pct-seuil">71%</td>
+                        <td class="col-tot">12</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -4135,6 +4199,91 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
+                        <td class="cell-val">5</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-val">3</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-val">2</td>
+                        <td class="cell-val">2</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="col-power">161 623 390</td>
+                        <td class="col-anc-power">1 337 455</td>
+                        <td class="col-pct positive">+11984.4%</td>
+                    </tr>
+                    <tr class="status-orange">
+                        <td class="player-name">Pepelu SK5</td>
+                        <td class="col-pts">1085</td>
+                        <td class="col-pct-seuil">108%</td>
+                        <td class="col-tot">44</td>
+                        <td class="cell-val">2</td>
+                        <td class="cell-val">21</td>
+                        <td class="cell-val">2</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-val">2</td>
+                        <td class="cell-val">3</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-val">1</td>
+                        <td class="cell-val">7</td>
+                        <td class="cell-val">1</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-val">1</td>
                         <td class="cell-val">4</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -4148,94 +4297,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">3</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="col-power">1 337 455</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
-                    </tr>
-                    <tr class="status-orange">
-                        <td class="player-name">Pepelu SK5</td>
-                        <td class="col-pts">1025</td>
-                        <td class="col-pct-seuil">102%</td>
-                        <td class="col-tot">47</td>
-                        <td class="cell-val">2</td>
-                        <td class="cell-val">23</td>
-                        <td class="cell-val">2</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">2</td>
-                        <td class="cell-val">3</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">1</td>
-                        <td class="cell-val">12</td>
-                        <td class="cell-val">1</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">1</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="col-power">109 523 085</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">109 614 085</td>
+                        <td class="col-anc-power">109 523 085</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Phoenix SK</td>
@@ -4290,37 +4354,15 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">90 314 045</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">91 942 805</td>
+                        <td class="col-anc-power">90 314 045</td>
+                        <td class="col-pct positive">+1.8%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Queen Venere ll</td>
-                        <td class="col-pts">105</td>
-                        <td class="col-pct-seuil">10%</td>
-                        <td class="col-tot">3</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">1</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">2</td>
+                        <td class="col-pts">0</td>
+                        <td class="col-pct-seuil">0%</td>
+                        <td class="col-tot">0</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -4347,9 +4389,31 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">30 726 050</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="col-power">30 737 050</td>
+                        <td class="col-anc-power">30 726 050</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Rain</td>
@@ -4405,8 +4469,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">71 554 730</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">71 554 730</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Remy HU Sk</td>
@@ -4461,15 +4525,15 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">60 209 815</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">61 764 815</td>
+                        <td class="col-anc-power">60 209 815</td>
+                        <td class="col-pct positive">+2.6%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Ririn</td>
-                        <td class="col-pts">105</td>
-                        <td class="col-pct-seuil">10%</td>
-                        <td class="col-tot">5</td>
+                        <td class="col-pts">75</td>
+                        <td class="col-pct-seuil">7%</td>
+                        <td class="col-tot">4</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -4503,7 +4567,7 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-val">2</td>
+                        <td class="cell-val">1</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -4518,15 +4582,15 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">50 717 290</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">50 891 290</td>
+                        <td class="col-anc-power">50 717 290</td>
+                        <td class="col-pct positive">+0.3%</td>
                     </tr>
-                    <tr class="status-red">
+                    <tr class="status-orange">
                         <td class="player-name">Roberto</td>
-                        <td class="col-pts">945</td>
-                        <td class="col-pct-seuil">94%</td>
-                        <td class="col-tot">24</td>
+                        <td class="col-pts">1155</td>
+                        <td class="col-pct-seuil">115%</td>
+                        <td class="col-tot">38</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-val">3</td>
                         <td class="cell-zero">-</td>
@@ -4534,7 +4598,7 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="cell-val">6</td>
+                        <td class="cell-val">20</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -4575,183 +4639,12 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">32 806 905</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">33 207 535</td>
+                        <td class="col-anc-power">32 806 905</td>
+                        <td class="col-pct positive">+1.2%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Shagul</td>
-                        <td class="col-pts">210</td>
-                        <td class="col-pct-seuil">21%</td>
-                        <td class="col-tot">6</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">2</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">4</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="col-power">56 374 795</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
-                    </tr>
-                    <tr class="status-red">
-                        <td class="player-name">Son of Don</td>
-                        <td class="col-pts">60</td>
-                        <td class="col-pct-seuil">6%</td>
-                        <td class="col-tot">1</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">1</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="col-power">106 142 945</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
-                    </tr>
-                    <tr class="status-red">
-                        <td class="player-name">Soylent Green</td>
-                        <td class="col-pts">645</td>
-                        <td class="col-pct-seuil">64%</td>
-                        <td class="col-tot">29</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">19</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">1</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">4</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">5</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="col-power">122 691 440</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
-                    </tr>
-                    <tr class="status-red">
-                        <td class="player-name">SweetJB</td>
                         <td class="col-pts">0</td>
                         <td class="col-pct-seuil">0%</td>
                         <td class="col-tot">0</td>
@@ -4803,9 +4696,180 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">34 977 700</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">56 489 895</td>
+                        <td class="col-anc-power">56 374 795</td>
+                        <td class="col-pct positive">+0.2%</td>
+                    </tr>
+                    <tr class="status-red">
+                        <td class="player-name">Son of Don</td>
+                        <td class="col-pts">280</td>
+                        <td class="col-pct-seuil">28%</td>
+                        <td class="col-tot">4</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-val">2</td>
+                        <td class="cell-val">2</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="col-power">106 216 945</td>
+                        <td class="col-anc-power">106 142 945</td>
+                        <td class="col-pct positive">+0.1%</td>
+                    </tr>
+                    <tr class="status-red">
+                        <td class="player-name">Soylent Green</td>
+                        <td class="col-pts">690</td>
+                        <td class="col-pct-seuil">69%</td>
+                        <td class="col-tot">31</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-val">20</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-val">1</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-val">5</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-val">5</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="col-power">123 435 840</td>
+                        <td class="col-anc-power">122 691 440</td>
+                        <td class="col-pct positive">+0.6%</td>
+                    </tr>
+                    <tr class="status-red">
+                        <td class="player-name">SweetJB</td>
+                        <td class="col-pts">30</td>
+                        <td class="col-pct-seuil">3%</td>
+                        <td class="col-tot">2</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-val">2</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="col-power">35 369 800</td>
+                        <td class="col-anc-power">34 977 700</td>
+                        <td class="col-pct positive">+1.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">THE TOP BANDIT</td>
@@ -4860,29 +4924,15 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">29 651 858</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">30 299 168</td>
+                        <td class="col-anc-power">29 651 858</td>
+                        <td class="col-pct positive">+2.2%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Tiny BooBoo</td>
-                        <td class="col-pts">50</td>
-                        <td class="col-pct-seuil">5%</td>
-                        <td class="col-tot">4</td>
-                        <td class="cell-val">2</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-val">1</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
-                        <td class="cell-zero">-</td>
+                        <td class="col-pts">30</td>
+                        <td class="col-pct-seuil">3%</td>
+                        <td class="col-tot">2</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -4903,6 +4953,7 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
+                        <td class="cell-val">1</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
@@ -4917,9 +4968,22 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">36 716 010</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="cell-zero">-</td>
+                        <td class="col-power">36 733 710</td>
+                        <td class="col-anc-power">36 716 010</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Tuzshura</td>
@@ -4974,9 +5038,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">1 508 097</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">51 736 990</td>
+                        <td class="col-anc-power">80 190 654</td>
+                        <td class="col-pct negative">-35.5%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">UFC</td>
@@ -5032,8 +5096,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">1 836 546</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">1 836 546</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Valvakos</td>
@@ -5089,8 +5153,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">967 895</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">967 895</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">VLA SK</td>
@@ -5145,9 +5209,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">54 433 400</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">54 454 400</td>
+                        <td class="col-anc-power">54 433 400</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Vogar SK</td>
@@ -5202,9 +5266,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">23 760 909</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">23 903 309</td>
+                        <td class="col-anc-power">23 760 909</td>
+                        <td class="col-pct positive">+0.6%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Vojas</td>
@@ -5259,9 +5323,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">141 574 065</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">141 640 065</td>
+                        <td class="col-anc-power">141 574 065</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">yektal 1001</td>
@@ -5316,9 +5380,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">63 353 730</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">63 541 080</td>
+                        <td class="col-anc-power">63 353 730</td>
+                        <td class="col-pct positive">+0.3%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Ypsilon 3</td>
@@ -5373,9 +5437,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">129 150 400</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">129 216 400</td>
+                        <td class="col-anc-power">129 150 400</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Yuldrok</td>
@@ -5430,9 +5494,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">74 474 305</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">74 476 405</td>
+                        <td class="col-anc-power">74 474 305</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Zed SK5</td>
@@ -5487,9 +5551,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">65 068 695</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">65 578 245</td>
+                        <td class="col-anc-power">65 068 695</td>
+                        <td class="col-pct positive">+0.8%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Zippy</td>
@@ -5544,9 +5608,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">128 069 800</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">128 245 100</td>
+                        <td class="col-anc-power">128 069 800</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Zulugrel</td>
@@ -5601,9 +5665,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">130 645 780</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">130 707 280</td>
+                        <td class="col-anc-power">130 645 780</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Воёра</td>
@@ -5659,8 +5723,8 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="col-power">89 359 091</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-anc-power">89 359 091</td>
+                        <td class="col-pct neutral">0%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">Гладиатор1</td>
@@ -5715,9 +5779,9 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">122 560 115</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">122 680 215</td>
+                        <td class="col-anc-power">122 560 115</td>
+                        <td class="col-pct positive">+0.1%</td>
                     </tr>
                     <tr class="status-red">
                         <td class="player-name">КЕЛЕВЭ 79</td>
@@ -5772,18 +5836,79 @@
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
                         <td class="cell-zero">-</td>
-                        <td class="col-power">28 760 615</td>
-                        <td class="col-anc-power">-</td>
-                        <td class="col-pct neutral">-</td>
+                        <td class="col-power">29 746 815</td>
+                        <td class="col-anc-power">28 760 615</td>
+                        <td class="col-pct positive">+3.4%</td>
                     </tr>
                 </tbody>
             </table>
         </div>
         
         <footer>
-            TB Chest Tracker v7.7 — UFC Clan — Total Battle<br>
+            TB Chest Tracker v7.12 — UFC Clan — Total Battle<br>
             Par Pascal & Super-Claude 🦸‍♂️
         </footer>
     </div>
+    
+    <script>
+        async function doBackup() {{
+            const btn = document.getElementById('btnBackup');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Sauvegarde...';
+            
+            try {{
+                const response = await fetch('/backup');
+                const data = await response.json();
+                
+                if (data.status === 'ok') {{
+                    btn.innerHTML = '✅ Sauvegardé!';
+                    setTimeout(() => {{
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    }}, 2000);
+                }} else {{
+                    throw new Error(data.message || 'Erreur');
+                }}
+            }} catch (error) {{
+                btn.innerHTML = '❌ Erreur!';
+                setTimeout(() => {{
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }}, 2000);
+            }}
+        }}
+        
+        async function doReset() {{
+            if (!confirm('⚠️ ATTENTION!\n\nCeci va:\n- Sauvegarder les données actuelles\n- REMETTRE À ZÉRO tous les compteurs\n\nContinuer?')) {{
+                return;
+            }}
+            
+            const btn = document.getElementById('btnReset');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Reset...';
+            
+            try {{
+                const response = await fetch('/reset');
+                const data = await response.json();
+                
+                if (data.status === 'ok') {{
+                    btn.innerHTML = '✅ Reset OK!';
+                    setTimeout(() => {{
+                        location.reload();
+                    }}, 1500);
+                }} else {{
+                    throw new Error(data.message || 'Erreur');
+                }}
+            }} catch (error) {{
+                btn.innerHTML = '❌ Erreur!';
+                setTimeout(() => {{
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }}, 2000);
+            }}
+        }}
+    </script>
 </body>
 </html>
